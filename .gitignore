@@ -5,3 +5,17 @@ __pycache__/
 data/chroma_db/
 data/pdfs/*.pdf
 .env
+
+# Byte-compiled / optimized / DLL files
+*.py[codz]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
