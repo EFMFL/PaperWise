@@ -22,8 +22,26 @@ def extraire_texte_pdf(chemin_pdf):
     return pages
 
 
+def supprimer_textes_orphelins(fichiers_pdf):
+    """Supprime les JSON dont le PDF d'origine n'existe plus dans data/pdfs.
+
+    Sans ce nettoyage, un PDF supprimé continuerait d'être réindexé
+    à chaque indexation (son texte extrait resterait sur le disque).
+    """
+    pdfs_presents = set(fichiers_pdf)
+    for nom_json in os.listdir(DOSSIER_SORTIE):
+        if not nom_json.endswith(".json"):
+            continue
+        pdf_correspondant = nom_json[:-len(".json")] + ".pdf"
+        if pdf_correspondant not in pdfs_presents:
+            os.remove(os.path.join(DOSSIER_SORTIE, nom_json))
+            print(f"  🧹 Ancien texte supprimé (PDF disparu) : {nom_json}")
+
+
 def traiter_tous_les_pdfs():
     fichiers_pdf = [f for f in os.listdir(DOSSIER_PDFS) if f.endswith(".pdf")]
+
+    supprimer_textes_orphelins(fichiers_pdf)
 
     if not fichiers_pdf:
         print("❌ Aucun PDF trouvé dans data/pdfs/ !")

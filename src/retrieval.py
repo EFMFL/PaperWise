@@ -26,21 +26,28 @@ def rechercher(question, nb_resultats=5, seuil_min=0.3):
         include=["documents", "metadatas", "distances"]
     )
 
-    chunks_pertinents = []
+    tous_les_chunks = []
 
     for texte, meta, distance in zip(
         resultats["documents"][0],
         resultats["metadatas"][0],
         resultats["distances"][0]
     ):
-        score = round(1 - distance, 3)
-        if score >= seuil_min:
-            chunks_pertinents.append({
-                "texte": texte,
-                "source": meta.get("source", "Source inconnue"),
-                "page": meta.get("page", "?"),
-                "score": score
-            })
+        tous_les_chunks.append({
+            "texte": texte,
+            "source": meta.get("source", "Source inconnue"),
+            "page": meta.get("page", "?"),
+            "score": round(1 - distance, 3)
+        })
+
+    chunks_pertinents = [c for c in tous_les_chunks if c["score"] >= seuil_min]
+
+    # Repli : si aucun passage n'atteint le seuil (fréquent pour une question
+    # vague comme « ça parle de quoi ? », ou posée dans une autre langue que
+    # le document), on renvoie quand même les meilleurs passages trouvés afin
+    # que l'IA dispose d'un minimum de contexte au lieu de ne rien répondre.
+    if not chunks_pertinents:
+        chunks_pertinents = tous_les_chunks
 
     return chunks_pertinents[:nb_resultats]
 

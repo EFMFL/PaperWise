@@ -22,6 +22,15 @@ def indexer_chunks():
     with open(FICHIER_CHUNKS, "r", encoding="utf-8") as f:
         chunks = json.load(f)
 
+    # Nettoyage : on retire de la base les chunks qui n'existent plus
+    # (sinon les documents supprimés continueraient d'apparaître dans les réponses)
+    ids_actuels = {c["id"] for c in chunks}
+    ids_en_base = collection.get(include=[])["ids"]
+    ids_obsoletes = [i for i in ids_en_base if i not in ids_actuels]
+    if ids_obsoletes:
+        collection.delete(ids=ids_obsoletes)
+        print(f"🧹 {len(ids_obsoletes)} anciens chunks supprimés de la base")
+
     print(f"📦 {len(chunks)} chunks à indexer...\n")
     taille_lot = 20
 

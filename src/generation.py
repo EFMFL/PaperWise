@@ -1,5 +1,4 @@
 import os
-import json
 import sys
 import ollama
 
@@ -111,20 +110,12 @@ def generer_reponse(question, nb_chunks=5):
     chunks = rechercher(question, nb_resultats=nb_chunks)
 
     if not chunks:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        chemin = os.path.join(base_dir, "data", "textes_extraits", "Règlement intérieur.json")
-        if os.path.exists(chemin):
-            with open(chemin, "r", encoding="utf-8") as f:
-                donnees = json.load(f)
-            texte = "\n\n".join(page.get("texte", "") for page in donnees.get("pages", []))
-            chunks = [{"texte": texte, "source": "Règlement intérieur.pdf", "page": 1, "score": 0.0}]
-
-        if not chunks:
-            return {
-                "reponse": "Je ne trouve pas d'informations pertinentes dans les documents pour répondre à cette question.",
-                "sources": [],
-                "question": question
-            }
+        return {
+            "reponse": "Je ne trouve pas d'informations dans les documents indexés. "
+                       "Vérifie qu'au moins un PDF a été indexé.",
+            "sources": [],
+            "question": question
+        }
 
     print(f"✅ {len(chunks)} passages trouvés")
 
