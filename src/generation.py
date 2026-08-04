@@ -1,7 +1,15 @@
-import os
 import json
+import os
 import sys
-import ollama
+import types
+
+try:
+    import ollama
+except ImportError:
+    def _ollama_absent(*args, **kwargs):
+        raise ImportError("ollama n'est pas installé")
+
+    ollama = types.SimpleNamespace(list=_ollama_absent, pull=_ollama_absent, chat=_ollama_absent)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:

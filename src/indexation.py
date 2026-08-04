@@ -1,24 +1,47 @@
 import json
 import os
-import chromadb
-from sentence_transformers import SentenceTransformer
+
+try:
+    import chromadb
+except ImportError:
+    chromadb = None
+
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = None
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FICHIER_CHUNKS = os.path.join(BASE_DIR, "data", "chunks", "tous_les_chunks.json")
 DOSSIER_CHROMA = os.path.join(BASE_DIR, "data", "chroma_db")
 
-print("🔄 Chargement du modèle d'embeddings...")
-modele = SentenceTransformer("all-MiniLM-L6-v2")
-print("✅ Modèle chargé !\n")
+modele = None
+collection = None
 
-client = chromadb.PersistentClient(path=DOSSIER_CHROMA)
-collection = client.get_or_create_collection(
-    name="scholarag",
-    metadata={"hnsw:space": "cosine"}
-)
+
+def _initialiser_client_et_modele():
+    global modele, collection
+
+    if modele is None:
+        if SentenceTransformer is None:
+            raise ImportError("sentence-transformers n'est pas installé")
+        print("🔄 Chargement du modèle d'embeddings...")
+        modele = SentenceTransformer("all-MiniLM-L6-v2")
+        print("✅ Modèle chargé !\n")
+
+    if collection is None:
+        if chromadb is None:
+            raise ImportError("chromadb n'est pas installé")
+        client = chromadb.PersistentClient(path=DOSSIER_CHROMA)
+        collection = client.get_or_create_collection(
+            name="scholarag",
+            metadata={"hnsw:space": "cosine"}
+        )
 
 
 def indexer_chunks():
+    _initialiser_client_et_modele()
+
     with open(FICHIER_CHUNKS, "r", encoding="utf-8") as f:
         chunks = json.load(f)
 
@@ -52,6 +75,8 @@ def indexer_chunks():
 
 
 def tester_recherche():
+    _initialiser_client_et_modele()
+
     print("\n🔍 Test de recherche...")
     question_test = "méthodes d'apprentissage automatique"
 
