@@ -10,7 +10,7 @@ PaperWise est un système RAG local permettant d’interroger des articles PDF. 
 ![ChromaDB](https://img.shields.io/badge/Base%20vectorielle-ChromaDB-orange?style=flat-square)
 ![Licence](https://img.shields.io/badge/Licence-MIT-lightgrey?style=flat-square)
 
----
+---m
 
 ## 🧠 Présentation du projet
 
