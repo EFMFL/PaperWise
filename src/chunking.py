@@ -16,6 +16,7 @@ def nettoyer_texte(texte):
     texte = re.sub(r' +', ' ', texte)
     texte = re.sub(r'\n{3,}', '\n\n', texte)
     texte = re.sub(r'^\s*\d+\s*$', '', texte, flags=re.MULTILINE)
+    texte = re.sub(r'\s+([,.;:!?])', r'\1', texte)
     return texte.strip()
 
 
@@ -24,18 +25,31 @@ def decouper_en_chunks(texte, taille=TAILLE_CHUNK, chevauchement=CHEVAUCHEMENT):
         return []
 
     texte = re.sub(r'\s+', ' ', texte).strip()
-    mots = texte.split()
+
+    paragraphes = [p.strip() for p in re.split(r'\n{2,}|\r\n{2,}', texte) if p.strip()]
+    if not paragraphes:
+        paragraphes = [m.strip() for m in re.split(r'(?<=[.!?])\s+', texte) if m.strip()]
+
+    if not paragraphes:
+        return []
+
     chunks = []
-    i = 0
+    buffer = ""
 
-    while i < len(mots):
-        fin = min(i + taille // 5, len(mots))
-        chunk = ' '.join(mots[i:fin])
-        if not chunk.strip():
-            break
-        chunks.append(chunk.strip())
-        i = max(i + 1, fin - chevauchement // 5)
+    for paragraphe in paragraphes:
+        candidat = f"{buffer} {paragraphe}".strip() if buffer else paragraphe
+        if len(candidat) <= taille:
+            buffer = candidat
+            continue
 
+        if buffer:
+            chunks.append(buffer)
+        buffer = paragraphe
+
+    if buffer:
+        chunks.append(buffer)
+
+    chunks = [c for c in chunks if len(c.split()) >= 8 or len(c) >= 120]
     return chunks
 
 

@@ -23,8 +23,7 @@ def indexer_chunks():
         chunks = json.load(f)
 
     print(f"📦 {len(chunks)} chunks à indexer...\n")
-    taille_lot = 2
-    chunks = chunks[:20]
+    taille_lot = 20
 
     for i in range(0, len(chunks), taille_lot):
         lot = chunks[i:i + taille_lot]
@@ -33,7 +32,11 @@ def indexer_chunks():
         textes = [c["texte"] for c in lot]
         metadonnees = [{"source": c["source"], "page": c["page"]} for c in lot]
 
-        embeddings = modele.encode(textes, show_progress_bar=False).tolist()
+        embeddings_brut = modele.encode(textes, show_progress_bar=False)
+        if hasattr(embeddings_brut, "tolist"):
+            embeddings = embeddings_brut.tolist()
+        else:
+            embeddings = embeddings_brut
 
         collection.upsert(
             ids=ids,
